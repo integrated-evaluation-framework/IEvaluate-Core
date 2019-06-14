@@ -1,6 +1,9 @@
 language: java
 git:
   quiet: true
+  submodules: false
 branches:
   only:
     - master
+before_install:
+  - git submodule add https://github.com/integrated-evaluation-framework/IEvaluate-API.git

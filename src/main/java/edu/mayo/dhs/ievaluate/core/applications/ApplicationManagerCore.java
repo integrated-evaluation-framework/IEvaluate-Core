@@ -19,21 +19,23 @@ public class ApplicationManagerCore implements ApplicationManager {
 
     public ApplicationManagerCore() {
         registeredProviders = new HashMap<>();
+        applications = new HashMap<>();
     }
 
     @Override
     public Collection<? extends ProfiledApplication> getRegisteredApplications() {
-        return null;
+        return applications.values();
     }
 
     @Override
     public ProfiledApplication getApplication(UUID uid) {
-        return null;
+        return applications.get(uid);
     }
 
     @Override
     public void registerApplication(ProfiledApplication application) {
-
+        this.applications.put(application.getId(), application);
+        IEvaluate.getStorage().saveRegisteredApplications();
     }
 
     @Override

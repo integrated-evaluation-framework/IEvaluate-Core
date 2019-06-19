@@ -40,10 +40,10 @@ public class ApplicationManagerCore implements ApplicationManager {
 
     @Override
     public void registerApplicationProvider(ApplicationProvider<?> provider) {
-        if (registeredProviders.containsKey(provider.getClass().getName())) {
-            IEvaluate.getLogger().warn("Ignoring duplicate application provider registration of type " + provider.getClass().getName());
+        if (registeredProviders.containsKey(provider.applicationClass().getName())) {
+            IEvaluate.getLogger().warn("Ignoring duplicate application provider registration for type " + provider.applicationClass().getName());
         } else {
-            registeredProviders.put(provider.getClass().getName(), provider);
+            registeredProviders.put(provider.applicationClass().getName(), provider);
         }
     }
 
@@ -61,6 +61,19 @@ public class ApplicationManagerCore implements ApplicationManager {
         }
         StorageProvider provider = IEvaluate.getStorage();
         Map<String, JsonNode> applicationMappings = provider.loadRegisteredApplications();
-
+        applicationMappings.forEach((clazz, marshaled) -> {
+            ApplicationProvider<?> appProvider = registeredProviders.get(clazz);
+            if (appProvider == null) {
+                IEvaluate.getLogger().warn("No suitable provider found for application of type " + clazz +", skipping");
+                return;
+            }
+            try {
+                ProfiledApplication app = appProvider.unmarshal(marshaled);
+                applications.put(app.getId(), app); // Don't save apps for every loaded app, wait until end;
+            } catch (Throwable t) {
+                IEvaluate.getLogger().warn("Failed to successfully deserialize application", t);
+            }
+        });
+        IEvaluate.getStorage().saveRegisteredApplications();
     }
 }

@@ -91,9 +91,9 @@ public class PluginManagerCore implements PluginManager {
                 Class<?> pluginClazz = Class.forName(mainClass, true, pluginClassLoaders.get(name));
                 Constructor<?> ctor = pluginClazz.getConstructor();
                 registeredPlugins.put(name, (IEvaluatePlugin) ctor.newInstance());
-            } catch (ClassCastException | IllegalAccessException | InstantiationException | InvocationTargetException
-                    | ClassNotFoundException | NoSuchMethodException e) {
-                IEvaluate.getLogger().fatal("Could not load plugin " + name, e);
+                registeredPlugins.get(name).loadConfig(pluginConfDir);
+            } catch (Throwable t) {
+                IEvaluate.getLogger().fatal("Could not load plugin " + name, t);
                 System.exit(-1);
             }
         });

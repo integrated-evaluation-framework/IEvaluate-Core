@@ -46,8 +46,7 @@ public class PluginClassLoader extends URLClassLoader {
      * we have to keep a weak reference to each stream.
      */
 
-    private WeakHashMap<Closeable,Void>
-            openFiles = new WeakHashMap<>();
+    private final WeakHashMap<Closeable,Void> openFiles = new WeakHashMap<>();
 
     @Override
     public void addURL(URL url) { // Public access to protected method

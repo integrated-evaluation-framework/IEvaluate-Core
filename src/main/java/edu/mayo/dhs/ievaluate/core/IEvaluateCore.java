@@ -134,6 +134,11 @@ public class IEvaluateCore implements IEvaluateServer {
     }
 
     @Override
+    public void registerAssertionDefinition(Class<? extends AssertionDefinition> clazz) {
+        assertionDefinitionsManager.registerDefinition(clazz);
+    }
+
+    @Override
     public AssertionDefinition getAssertionDefinition(Class<? extends AssertionDefinition> clazz) {
         return assertionDefinitionsManager.getDefinition(clazz);
     }

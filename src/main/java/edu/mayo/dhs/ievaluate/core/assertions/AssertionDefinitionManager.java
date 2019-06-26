@@ -47,7 +47,7 @@ public final class AssertionDefinitionManager {
 
 
     public final void registerDefinition(Class<? extends AssertionDefinition> clazz) {
-        if (IEvaluate.getServer().getInitializationState().ordinal() > IEvaluateServer.InitState.POST_ENABLE.ordinal()) {
+        if (IEvaluate.getServer().getInitializationState().ordinal() >= IEvaluateServer.InitState.POST_ENABLE.ordinal()) {
             IEvaluate.getLogger().warn("Attempted to register an assertion definition type after onEnable(), ignoring");
             return;
         }

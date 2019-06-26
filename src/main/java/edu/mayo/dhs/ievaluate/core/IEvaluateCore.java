@@ -3,9 +3,13 @@ package edu.mayo.dhs.ievaluate.core;
 import edu.mayo.dhs.ievaluate.api.IEvaluate;
 import edu.mayo.dhs.ievaluate.api.IEvaluateServer;
 import edu.mayo.dhs.ievaluate.api.applications.ApplicationManager;
+import edu.mayo.dhs.ievaluate.api.models.assertions.AssertionDefinition;
+import edu.mayo.dhs.ievaluate.api.models.assertions.AssertionInput;
+import edu.mayo.dhs.ievaluate.api.models.assertions.AssertionOutput;
 import edu.mayo.dhs.ievaluate.api.plugins.PluginManager;
 import edu.mayo.dhs.ievaluate.api.storage.StorageProvider;
 import edu.mayo.dhs.ievaluate.core.applications.ApplicationManagerCore;
+import edu.mayo.dhs.ievaluate.core.assertions.AssertionDefinitionManager;
 import edu.mayo.dhs.ievaluate.core.plugins.PluginManagerCore;
 import edu.mayo.dhs.ievaluate.core.storage.InMemoryStorageProvider;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +17,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Map;
 
 public class IEvaluateCore implements IEvaluateServer {
 
@@ -25,6 +29,8 @@ public class IEvaluateCore implements IEvaluateServer {
 
     private ApplicationManagerCore applicationManager;
     private PluginManagerCore pluginManager;
+
+    private AssertionDefinitionManager assertionDefinitionsManager;
 
 
     public IEvaluateCore(File workingDir) {
@@ -52,9 +58,10 @@ public class IEvaluateCore implements IEvaluateServer {
             IEvaluate.getLogger().fatal("The supplied working directory " + workingDir + " does not exist or is not a directory!");
             System.exit(-1); // Fatal exit
         }
-        // Initialize the plugin and application manager
+        // Initialize managers
         this.pluginManager = new PluginManagerCore();
         this.applicationManager = new ApplicationManagerCore();
+        this.assertionDefinitionsManager = new AssertionDefinitionManager();
         // Load all plugins
         File pluginDir = new File(workingDir, "plugins");
         if (!pluginDir.isDirectory() || (!pluginDir.exists() && !pluginDir.mkdirs())) {
@@ -123,6 +130,33 @@ public class IEvaluateCore implements IEvaluateServer {
             String errMsg = "Attempted to re-register a storage provider after one is already registered!";
             this.logger.error(errMsg);
             throw new IllegalStateException(errMsg);
+        }
+    }
+
+    @Override
+    public AssertionDefinition getAssertionDefinition(Class<? extends AssertionDefinition> clazz) {
+        return assertionDefinitionsManager.getDefinition(clazz);
+    }
+
+    @Override
+    public AssertionInput getAssertionInput(Class<? extends AssertionInput> clazz, Map<String, String> inputParams) {
+        AssertionInput ret = assertionDefinitionsManager.getInputDefinition(clazz);
+        if (ret != null) {
+            ret.fromParameterMap(inputParams);
+            return ret;
+        } else {
+            return null; // If null, we already handled logging earlier
+        }
+    }
+
+    @Override
+    public AssertionOutput getAssertionOutput(Class<? extends AssertionOutput> clazz, Map<String, String> values) {
+        AssertionOutput ret = assertionDefinitionsManager.getOutputDefinition(clazz);
+        if (ret != null) {
+            ret.fromOutputMap(values);
+            return ret;
+        } else {
+            return null; // If null, we already handled logging earlier
         }
     }
 

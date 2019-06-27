@@ -15,11 +15,13 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.jar.JarFile;
 import java.util.zip.ZipEntry;
 
 /**
- * Heavily inspired by PL4J's implementation of plugin management, but modified to suit our use cases
+ * Heavily inspired by PL4J's implementation of plugin management, but modified to suit our use cases.
+ * Fully thread-safe
  */
 public class PluginManagerCore implements PluginManager {
     private Map<String, IEvaluatePlugin> registeredPlugins;
@@ -32,8 +34,8 @@ public class PluginManagerCore implements PluginManager {
     }
 
     private void loadDescriptorsAndClassloaders(File pluginsDir) {
-        this.pluginClassLoaders = new HashMap<>();
-        this.descriptors = new HashMap<>();
+        this.pluginClassLoaders = new ConcurrentHashMap<>();
+        this.descriptors = new ConcurrentHashMap<>();
         ObjectMapper om = new ObjectMapper();
         for (File f : Objects.requireNonNull(pluginsDir.listFiles())) {
             if (f.getName().endsWith(".jar")) { // Ignore non-jars
@@ -57,7 +59,7 @@ public class PluginManagerCore implements PluginManager {
     }
 
     private void registerPlugins(File confDir) {
-        this.registeredPlugins = new HashMap<>();
+        this.registeredPlugins = new ConcurrentHashMap<>();
         ObjectMapper om = new ObjectMapper();
         descriptors.forEach((name, descriptor) -> {
             // Copy and load configuration
@@ -100,8 +102,8 @@ public class PluginManagerCore implements PluginManager {
     }
 
     public void initializePlugins() {
-        Set<String> visiting = new HashSet<>();
-        Set<String> initialized = new HashSet<>();
+        Set<String> visiting = ConcurrentHashMap.newKeySet();
+        Set<String> initialized = ConcurrentHashMap.newKeySet();
         registeredPlugins.forEach((name, plugin) -> initializePluginRecursive(visiting, initialized, name, plugin));
     }
 
@@ -132,8 +134,8 @@ public class PluginManagerCore implements PluginManager {
     }
 
     public void enablePlugins() {
-        Set<String> visiting = new HashSet<>();
-        Set<String> initialized = new HashSet<>();
+        Set<String> visiting = ConcurrentHashMap.newKeySet();
+        Set<String> initialized = ConcurrentHashMap.newKeySet();
         registeredPlugins.forEach((name, plugin) -> enablePluginRecursive(visiting, initialized, name, plugin));
     }
 

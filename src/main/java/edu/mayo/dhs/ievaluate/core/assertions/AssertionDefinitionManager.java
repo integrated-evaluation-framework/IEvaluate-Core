@@ -9,12 +9,13 @@ import edu.mayo.dhs.ievaluate.api.models.assertions.AssertionOutput;
 import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Internal handling for {@link AssertionDefinition} management ensuring that definitions are all singletons
  */
 public final class AssertionDefinitionManager {
-    private final Map<String, AssertionDefinition> definitionMap = new HashMap<>();
+    private final Map<String, AssertionDefinition> definitionMap = new ConcurrentHashMap<>();
 
     public final AssertionDefinition getDefinition(Class<? extends AssertionDefinition> clazz) {
         AssertionDefinition ret = definitionMap.get(clazz.getName());

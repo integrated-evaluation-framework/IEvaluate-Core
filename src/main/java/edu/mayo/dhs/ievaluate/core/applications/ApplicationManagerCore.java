@@ -12,14 +12,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationManagerCore implements ApplicationManager {
     private Map<String, ApplicationProvider<?>> registeredProviders;
     private Map<UUID, ProfiledApplication> applications;
 
     public ApplicationManagerCore() {
-        registeredProviders = new HashMap<>();
-        applications = new HashMap<>();
+        registeredProviders = new ConcurrentHashMap<>();
+        applications = new ConcurrentHashMap<>();
     }
 
     @Override
